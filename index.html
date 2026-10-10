@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CBT Kotoba Building Cleaning</title>
+<meta name="theme-color" content="#1e3a5f">
+<style>
+:root{--bg:#f4f6fa;--card:#fff;--tx:#17202e;--mu:#667085;--pr:#1e3a5f;--ac:#2f6fed;--ok:#12a150;--ng:#d92d20;--bd:#d9dfe9}
+@media(prefers-color-scheme:dark){:root{--bg:#0f141c;--card:#192130;--tx:#e8edf5;--mu:#93a0b4;--pr:#8fb4ff;--ac:#4c8dff;--bd:#2b3648}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.45 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP","Yu Gothic",sans-serif}
+main{max-width:640px;margin:0 auto;padding:14px 14px 40px}
+h1{font-size:20px;margin:6px 0 2px;color:var(--pr)}
+.sub{color:var(--mu);font-size:13px;margin-bottom:14px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px;margin-bottom:12px}
+label{display:block;font-size:13px;color:var(--mu);margin:10px 0 4px}
+select,button{font:inherit}
+select{width:100%;padding:11px;border-radius:10px;border:1px solid var(--bd);background:var(--card);color:var(--tx)}
+.chk{display:flex;gap:8px;align-items:center;margin:10px 0 0;font-size:14px;color:var(--tx)}
+.btn{width:100%;padding:13px;border:0;border-radius:12px;background:var(--ac);color:#fff;font-weight:600;cursor:pointer;margin-top:12px}
+.btn.alt{background:transparent;color:var(--ac);border:1px solid var(--ac)}
+.btn:disabled{opacity:.4}
+.hide{display:none!important}
+.bar{display:flex;justify-content:space-between;font-size:13px;color:var(--mu);margin-bottom:8px}
+.prog{height:6px;background:var(--bd);border-radius:9px;overflow:hidden;margin-bottom:12px}
+.prog i{display:block;height:100%;background:var(--ac);width:0;transition:width .2s}
+.q{text-align:center;padding:10px 4px 6px}
+.q .big{font-size:30px;font-weight:700;line-height:1.3;word-break:break-word}
+.q .rd{font-size:15px;color:var(--mu);min-height:20px}
+.q img{max-width:100%;max-height:200px;border-radius:10px;background:#fff}
+.opts{display:grid;gap:8px;margin-top:10px}
+.opts.img{grid-template-columns:1fr 1fr}
+.o{display:flex;align-items:center;gap:10px;text-align:left;padding:12px;border-radius:12px;border:1.5px solid var(--bd);background:var(--card);color:var(--tx);cursor:pointer;min-height:52px}
+.o.img{flex-direction:column;justify-content:center;text-align:center}
+.o img{max-height:110px;max-width:100%;background:#fff;border-radius:8px}
+.o b{flex:none;width:24px;height:24px;border-radius:50%;background:var(--bd);font-size:12px;display:grid;place-items:center}
+.o small{display:block;color:var(--mu);font-size:12px}
+.o.ok{border-color:var(--ok);background:rgba(18,161,80,.14)}
+.o.ng{border-color:var(--ng);background:rgba(217,45,32,.14)}
+.fb{margin-top:10px;padding:10px 12px;border-radius:10px;font-size:14px;background:var(--bg)}
+.score{font-size:46px;font-weight:800;text-align:center;color:var(--pr)}
+.wr{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--bd);font-size:14px}
+.wr small{color:var(--mu)}
+.mu{color:var(--mu);font-size:13px}
+</style>
+</head>
+<body>
+<main>
+<h1>CBT Kotoba Building Cleaning</h1>
+<div class="sub" id="info"></div>
+
+<!-- SETUP -->
+<section id="setup" class="card">
+  <label>Mode soal</label>
+  <select id="mode">
+    <option value="jp-id">日本語 → Indonesia</option>
+    <option value="id-jp">Indonesia → 日本語</option>
+    <option value="mix">Campuran (dua arah)</option>
+    <option value="img-jp">Gambar alat → Nama Jepang</option>
+    <option value="img-id">Gambar alat → Nama Indonesia</option>
+    <option value="jp-img">Nama Jepang → Gambar alat</option>
+    <option value="id-img">Nama Indonesia → Gambar alat</option>
+    <option value="img-mix">Alat bergambar (campuran)</option>
+  </select>
+  <label>Materi</label>
+  <select id="set"></select>
+  <label>Jumlah soal</label>
+  <select id="cnt"><option>10</option><option selected>20</option><option>50</option><option value="0">Semua</option></select>
+  <label class="chk"><input type="checkbox" id="rdOff"> Sembunyikan bacaan hiragana (lebih sulit)</label>
+  <label class="chk"><input type="checkbox" id="tmr"> Timer 20 detik per soal</label>
+  <button class="btn" id="start">Mulai</button>
+  <div class="mu" style="margin-top:10px">Pintasan keyboard: 1-4 pilih jawaban, Enter lanjut.</div>
+</section>
+
+<!-- QUIZ -->
+<section id="quiz" class="hide">
+  <div class="bar"><span id="no"></span><span id="tm"></span><span id="sc"></span></div>
+  <div class="prog"><i id="pg"></i></div>
+  <div class="card">
+    <div class="q" id="q"></div>
+    <div class="opts" id="opts"></div>
+    <div class="fb hide" id="fb"></div>
+    <button class="btn hide" id="next">Lanjut</button>
+  </div>
+  <button class="btn alt" id="quit">Berhenti</button>
+</section>
+
+<!-- RESULT -->
+<section id="res" class="hide">
+  <div class="card">
+    <div class="score" id="rs"></div>
+    <div class="mu" style="text-align:center" id="rt"></div>
+    <button class="btn" id="retryW">Ulangi yang salah</button>
+    <button class="btn alt" id="again">Kembali ke menu</button>
+  </div>
+  <div class="card hide" id="wcard"><b>Review jawaban salah</b><div id="wl"></div></div>
+</section>
+</main>
+<script src="data.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+const SETS=[["all","Semua kotoba"],["Bab 1","Bab 1 (第1課)"],["Bab 2","Bab 2 (第2課)"],["Bab 3","Bab 3 (第3課)"],["Soal Ujian","Kosakata soal ujian"],["Buku Teks","Kosakata buku teks"],["alat","Daftar alat (資器材)"],["salah","Kata yang sering salah"]];
+const store={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const BANK=VOCAB.map((r,i)=>({k:'v'+i,s:r[0],jp:r[2],rd:r[3]===r[2]?'':r[3],id:r[4],img:null}))
+  .concat(TOOLS.map((t,i)=>({k:'t'+i,s:'alat',jp:t[1],rd:t[2],id:t[3],img:'img/'+t[0]})));
+const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+let Q=[],cur=0,score=0,wrong=[],locked=false,timer=null,left=0,cfg={};
+const wrongSet=()=>new Set(store.get('kb_wrong',[]));
+
+function refreshSets(){
+  const w=wrongSet().size;
+  $('set').innerHTML=SETS.map(([v,l])=>`<option value="${v}">${l}${v==='salah'?' ('+w+')':v==='alat'?' ('+TOOLS.length+')':''}</option>`).join('');
+  $('info').textContent=`${VOCAB.length} kotoba + ${TOOLS.length} alat bergambar`;
+}
+function pool(set,mode){
+  if(mode.includes('img')) return BANK.filter(b=>b.img);
+  if(set==='all') return BANK.filter(b=>!b.img||true);
+  if(set==='salah'){const w=wrongSet();return BANK.filter(b=>w.has(b.k))}
+  return BANK.filter(b=>b.s===set);
+}
+function mkQ(it,dir,all){
+  const asImg=dir.endsWith('img'), toImg=dir.endsWith('-img');
+  const field=dir.endsWith('jp')?'jp':'id';
+  const key=toImg?'img':field;
+  const seen=new Set([it[key]]);const ds=[];
+  for(const d of shuffle(all)){
+    if(ds.length>=3)break;
+    if(d.k===it.k||seen.has(d[key])||(toImg&&!d.img))continue;
+    seen.add(d[key]);ds.push(d);
+  }
+  const opts=shuffle([it,...ds]);
+  return {it,dir,opts,ans:opts.indexOf(it),toImg,field,from:dir.split('-')[0]};
+}
+function start(items){
+  cfg={mode:$('mode').value,set:$('set').value,hide:$('rdOff').checked,tmr:$('tmr').checked};
+  const m=cfg.mode;
+  let src=items||pool(cfg.set,m);
+  if(src.length<4&&!items){alert(cfg.set==='salah'?'Belum ada kata yang salah. Kerjakan kuis dulu.':'Materi terlalu sedikit.');return}
+  let n=+$('cnt').value;src=shuffle(src);if(n&&!items)src=src.slice(0,n);
+  const all=m.includes('img')?BANK.filter(b=>b.img):BANK;
+  const dirs={'jp-id':['jp-id'],'id-jp':['id-jp'],'mix':['jp-id','id-jp'],'img-jp':['img-jp'],'img-id':['img-id'],'jp-img':['jp-img'],'id-img':['id-img'],'img-mix':['img-jp','img-id','jp-img','id-img']}[m];
+  Q=src.map(it=>mkQ(it,dirs[Math.floor(Math.random()*dirs.length)],all));
+  cur=0;score=0;wrong=[];
+  ['setup','res'].forEach(i=>$(i).classList.add('hide'));$('quiz').classList.remove('hide');
+  show();
+}
+function rd(it){return cfg.hide?'':(it.rd||'')}
+function show(){
+  locked=false;const q=Q[cur],it=q.it;
+  $('no').textContent=`Soal ${cur+1}/${Q.length}`;$('sc').textContent=`Benar: ${score}`;
+  $('pg').style.width=(cur/Q.length*100)+'%';
+  const fromImg=q.from==='img';
+  let h='';
+  if(fromImg) h=`<img src="${it.img}" alt="">`;
+  else if(q.from==='jp') h=`<div class="big">${it.jp}</div><div class="rd">${rd(it)}</div>`;
+  else h=`<div class="big">${it.id}</div>`;
+  $('q').innerHTML=h;
+  const o=$('opts');o.className='opts'+(q.toImg?' img':'');
+  o.innerHTML=q.opts.map((x,i)=>{
+    let body;
+    if(q.toImg) body=`<img src="${x.img}" alt="">`;
+    else if(q.field==='jp') body=`<span>${x.jp}<small>${rd(x)}</small></span>`;
+    else body=`<span>${x.id}</span>`;
+    return `<button class="o${q.toImg?' img':''}" data-i="${i}"><b>${i+1}</b>${body}</button>`;
+  }).join('');
+  o.querySelectorAll('.o').forEach(b=>b.onclick=()=>pick(+b.dataset.i));
+  $('fb').classList.add('hide');$('next').classList.add('hide');
+  clearInterval(timer);
+  if(cfg.tmr){left=20;$('tm').textContent='⏱ '+left;timer=setInterval(()=>{left--;$('tm').textContent='⏱ '+left;if(left<=0)pick(-1)},1000)}else $('tm').textContent='';
+}
+function pick(i){
+  if(locked)return;locked=true;clearInterval(timer);
+  const q=Q[cur],ok=i===q.ans,it=q.it;
+  document.querySelectorAll('.o').forEach((b,j)=>{if(j===q.ans)b.classList.add('ok');else if(j===i)b.classList.add('ng')});
+  const w=wrongSet();
+  if(ok){score++;w.delete(it.k)}else{wrong.push(it);w.add(it.k)}
+  store.set('kb_wrong',[...w]);
+  $('sc').textContent=`Benar: ${score}`;
+  const fb=$('fb');fb.classList.remove('hide');
+  fb.innerHTML=(ok?'✅ Benar. ':(i<0?'⏱ Waktu habis. ':'❌ Salah. '))+`<b>${it.jp}</b>${it.rd?` (${it.rd})`:''} = ${it.id}`;
+  $('next').textContent=cur+1>=Q.length?'Lihat hasil':'Lanjut';$('next').classList.remove('hide');
+}
+function next(){if(!locked)return;cur++;cur>=Q.length?finish():show()}
+function finish(){
+  clearInterval(timer);$('quiz').classList.add('hide');$('res').classList.remove('hide');
+  const p=Math.round(score/Q.length*100);
+  $('rs').textContent=p+'%';
+  $('rt').textContent=`${score} benar dari ${Q.length} soal. `+(p>=90?'Mantap, siap ujian! 🎯':p>=70?'Bagus, tinggal rapikan yang salah.':'Ulangi lagi, pelan-pelan pasti hafal.');
+  const best=store.get('kb_best',{});best[cfg.mode+'|'+cfg.set]=Math.max(best[cfg.mode+'|'+cfg.set]||0,p);store.set('kb_best',best);
+  $('retryW').classList.toggle('hide',!wrong.length);
+  $('wcard').classList.toggle('hide',!wrong.length);
+  $('wl').innerHTML=wrong.map(w=>`<div class="wr"><span>${w.img?`<img src="${w.img}" style="height:34px;vertical-align:middle;margin-right:6px">`:''}${w.jp}<br><small>${w.rd||''}</small></span><span style="text-align:right">${w.id}</span></div>`).join('');
+  refreshSets();
+}
+$('start').onclick=()=>start();
+$('next').onclick=next;
+$('quit').onclick=()=>{if(confirm('Berhenti dan lihat hasil sementara?')){Q=Q.slice(0,Math.max(cur+(locked?1:0),1));finish()}};
+$('retryW').onclick=()=>start(shuffle(wrong));
+$('again').onclick=()=>{$('res').classList.add('hide');$('setup').classList.remove('hide');refreshSets()};
+document.addEventListener('keydown',e=>{
+  if($('quiz').classList.contains('hide'))return;
+  if(e.key>='1'&&e.key<='4')pick(+e.key-1);else if(e.key==='Enter')next();
+});
+refreshSets();
+</script>
+</body>
+</html>
