@@ -43,6 +43,28 @@ select{width:100%;padding:11px;border-radius:10px;border:1px solid var(--bd);bac
 .wr{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--bd);font-size:14px}
 .wr small{color:var(--mu)}
 .mu{color:var(--mu);font-size:13px}
+/* animasi */
+@keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.045)}100%{transform:scale(1)}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(4px)}}
+@keyframes swing{from{opacity:0;transform:scale(.8) rotate(-4deg)}to{opacity:1;transform:none}}
+@keyframes fall{to{transform:translateY(105vh) rotate(720deg);opacity:.9}}
+section,footer{animation:up .35s ease both}
+.q>*{animation:swing .35s ease both}
+.o{animation:up .3s ease both;transition:transform .12s,border-color .15s,background .15s}
+.o:nth-child(2){animation-delay:.05s}.o:nth-child(3){animation-delay:.1s}.o:nth-child(4){animation-delay:.15s}
+.o:hover{transform:translateY(-2px)}
+.o:active{transform:scale(.97)}
+.o.ok{animation:pop .4s ease}
+.o.ng{animation:shake .4s ease}
+.fb{animation:up .25s ease both}
+.btn{transition:transform .12s,filter .15s}
+.btn:hover{filter:brightness(1.08)}.btn:active{transform:scale(.97)}
+.prog i{transition:width .45s cubic-bezier(.2,.8,.2,1)}
+.score{animation:swing .5s ease both}
+.wr{animation:up .3s ease both}
+.cf{position:fixed;top:-14px;width:9px;height:14px;border-radius:2px;pointer-events:none;z-index:9;animation:fall linear forwards}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
@@ -96,6 +118,10 @@ select{width:100%;padding:11px;border-radius:10px;border:1px solid var(--bd);bac
   </div>
   <div class="card hide" id="wcard"><b>Review jawaban salah</b><div id="wl"></div></div>
 </section>
+<footer class="card" style="text-align:center;margin-top:18px">
+  <div class="mu">Dibuat oleh <b style="color:var(--pr)">Zals Unixity</b></div>
+  <a class="btn" style="display:block;text-decoration:none;background:#25d366;color:#08331b" href="https://whatsapp.com/channel/0029VaYuIQT2v1IjZmqTNG3x" target="_blank" rel="noopener">Ikuti saluran Unixity di WhatsApp</a>
+</footer>
 </main>
 <script src="data.js"></script>
 <script>
@@ -185,7 +211,14 @@ function next(){if(!locked)return;cur++;cur>=Q.length?finish():show()}
 function finish(){
   clearInterval(timer);$('quiz').classList.add('hide');$('res').classList.remove('hide');
   const p=Math.round(score/Q.length*100);
-  $('rs').textContent=p+'%';
+  let c=0;const st=Math.max(1,Math.round(p/30));$('rs').textContent='0%';
+  const iv=setInterval(()=>{c=Math.min(p,c+st);$('rs').textContent=c+'%';if(c>=p)clearInterval(iv)},30);
+  if(p>=90&&!matchMedia('(prefers-reduced-motion:reduce)').matches){
+    const cols=['#2f6fed','#12a150','#f5b301','#d92d20','#8b5cf6'];
+    for(let i=0;i<50;i++){const d=document.createElement('i');d.className='cf';
+      d.style.cssText=`left:${Math.random()*100}vw;background:${cols[i%5]};animation-duration:${1.8+Math.random()*1.6}s;animation-delay:${Math.random()*.5}s`;
+      document.body.appendChild(d);setTimeout(()=>d.remove(),4200)}
+  }
   $('rt').textContent=`${score} benar dari ${Q.length} soal. `+(p>=90?'Mantap, siap ujian! 🎯':p>=70?'Bagus, tinggal rapikan yang salah.':'Ulangi lagi, pelan-pelan pasti hafal.');
   const best=store.get('kb_best',{});best[cfg.mode+'|'+cfg.set]=Math.max(best[cfg.mode+'|'+cfg.set]||0,p);store.set('kb_best',best);
   $('retryW').classList.toggle('hide',!wrong.length);
